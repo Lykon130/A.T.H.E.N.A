@@ -9,11 +9,20 @@
 - **Networking** — the Obsidian vault: a graph of linked notes, not a flat file dump.
 - **Analysis** — department-level dashboards that turn raw activity into numbers you can act on.
 
-This merges four references into one build: the original JARVIS OS 4-part plan, the "Optimal Engine" brain-store/Conductor demo, the "AI Headquarters" department-dashboard concept, and sagar_builds' "Ultron" edge/gesture build.
+## References merged into this build
+
+- **JARVIS OS** (original 4-part plan) — Claude Code engine, Obsidian memory, local voice, HUD.
+- **"Optimal Engine"** — brain-store knowledge graph, Conductor routing, skill maturity ladder (human-led → human-assisted → fully autonomous).
+- **"AI Headquarters"** — department-dashboard concept, CEO Command Center rollup.
+- **sagar_builds' "Ultron"** — edge compute (Jetson Nano), gesture control, phone-call-style voice UI. Flagged as a v2 experiment, not adopted for v1.
+- **"Council of High Intelligence"** — structured multi-perspective deliberation, now the cross-cutting `council` skill.
+- **"AI Content Team OS"** — the research → hooks → scripts → analyze content pipeline, now the Marketing department.
+- **"One Claude, 11 Departments, 92 Skills"** — an official skill-taxonomy reference; borrowed naming conventions, not the literal skill set.
+- **AI trading/investing loop references** — informed `research-score`, `news-monitor`, `watchlist-scan`, all under a hard no-execution boundary.
 
 ---
 
-## The merged architecture
+## The architecture
 
 ```
                      ┌─────────────┐
@@ -25,58 +34,84 @@ This merges four references into one build: the original JARVIS OS 4-part plan, 
          Departments    Vault (memory)   HUD (face)
          = skills/      = Obsidian       = one screen,
          grouped by       graph vault,     pulls live
-         domain           raw/wiki/        from vault
-                          outputs
+         domain,          raw/wiki/        from vault
+         + cross-cutting  outputs
+         skills callable
+         from any of them
 ```
 
-**Claude Code = the engine and the Conductor.** You don't need to build a separate router — Claude Code's own skill-triggering IS the Conductor from the Optimal Engine demo. A skill's `description` field is what lets Claude Code pick the right one, the same way their Conductor picked a department.
+**Claude Code = the engine and the Conductor.** No separate router — Claude Code's own skill-triggering IS the Conductor. A skill's `description` field is what lets Claude Code pick the right one.
 
-**Departments = skill groups, not separate agents.** The AI HQ video pitches each department (Strategy, Sales, Finance, Support, Engineering, Data) as an independent AI worker with its own dashboard. For a one-person build, that's over-engineered — you don't need eight agents, you need eight *folders of skills* under one engine, each producing output that lands in the matching vault section. Same mental model, one tenth the complexity.
+**Departments = skill groups, not separate agents.** Not eight independent AI workers with their own dashboards (the AI HQ model) — folders of skills under one engine, each producing output that lands in the matching vault section.
 
-**Vault = the brain-store.** Optimal Engine's "dump into the brain, text/voice/drag/upload" is exactly what the Obsidian vault + Local REST API/MCP wiring already gives you (see build guide, Step 2) — you get this for free, no separate graph database to build.
+**Cross-cutting skills** aren't owned by any department, callable from all of them:
+- `vault-write` / `vault-health` — the vault's read/write interface and hygiene auditor (link-checking, orphan-finding, frontmatter-linting).
+- `remember` — maintains `vault/wiki/profile.md`, a persistent user profile every other skill reads for personalization (the "JARVIS knows Tony" piece).
+- `council` — structured multi-lens deliberation (Logic/Strategy/First Principles/Ethics/Systems/Risk) for decisions big enough to earn it, in any department. Started Strategy-only as `deliberate`, generalized once it was clear a big Finance call or a Legal signature deserves the same rigor.
+- `digest` — proactive flagging, distinct from Data's full weekly `report`.
 
-**Skill maturity ladder.** Optimal Engine's skill cards carry a stage: human-led → human-assisted → fully autonomous. Worth stealing directly — tag every `SKILL.md` with a `stage` so you always know which skills you still need to supervise.
+**Vault = the brain-store.** Obsidian + Local REST API/MCP wiring gives you the "dump into the brain, text/voice/drag/upload" behavior for free — no separate graph database.
 
-**Vault hygiene as its own skill.** Their "audit brain-store markdown health" skill (link-checker, orphan-finder, frontmatter-linter) is a real gap in the original JARVIS plan — add it as `skills/vault/vault-health.md`.
+**Skill maturity ladder.** Every `SKILL.md` carries a `stage`: human-led → human-assisted → fully autonomous, tracked live in `org-chart.md`. No skill moves up the ladder by default.
 
-**HUD layout.** The AI HQ dashboards (per-department metrics, a CEO Command Center rolling everything up) are a good visual model for the JARVIS "one screen" HUD — a top-level overview panel with drill-into-department views, instead of one flat dashboard.
+**HUD layout.** Overview panel + drill-into-department views, not one flat dashboard — not yet built.
 
-**Voice — two tracks, not one.** Keep the DIY local pipeline (faster-whisper + Piper, push-to-talk) as the default, since it works identically on your Windows and Fedora machines. Ultron's build is a second, more ambitious track worth knowing about, not a replacement:
-- Runs on a **Jetson Nano** — a small dedicated edge box instead of the same laptop doing everything. Optional upgrade path, not a requirement.
-- **Hand-gesture control** in front of the monitor (webcam + hand-tracking) as an alternative input to push-to-talk.
-- **Phone-call-style interface** — you call a contact named "Ultron" and talk to it like a phone call, instead of a hotkey. Interesting UX, but adds a telephony layer (e.g. Twilio) you don't need for v1.
-
-Treat Jetson/gesture/call-UI as a v2 experiment after the core loop (skills → vault → voice → HUD) is working end to end.
+**Voice — two tracks.** DIY local pipeline (faster-whisper + Piper, push-to-talk) as the default, works identically on Windows and Fedora — not yet installed. Ultron's edge/gesture/call-UI approach stays a v2 experiment, only worth revisiting once the core loop works end to end.
 
 ---
 
 ## Department → skill map
 
-The live, authoritative table is `vault/wiki/org-chart.md` — it changes often enough (12 skills added in one pass covering personal ops, solo business, content, and investing) that keeping a second copy here would just go stale. Check there for the current department → skill → maturity-stage list.
+Live, authoritative table: `vault/wiki/org-chart.md`. As of this update: **16 departments (14 with real skills, 2 intentionally empty — Home/Environment and Human Resources), 31 skills.**
 
-Standing rule, unchanged: only build department folders you'll actually use. Engineering, Data, and HR remain empty stubs on purpose — no real workflow behind them yet.
+Every department got built when a real trigger came up, not upfront — Engineering, Health, and Concierge, for example, only exist because specific needs (active repos, a wearable, a booking request) came up in conversation, not because the taxonomy called for them.
 
-Every Finance and Sales/Support skill that touches drafting or execution carries the same two hard lines: (1) Finance skills research, score, track, and alert only — nothing places or executes a trade; (2) `draft-outreach` and `client-response` draft only — sending anything on your behalf needs your explicit go-ahead each time, not a standing permission.
+---
+
+## Hard boundaries — permanent, not gaps to close
+
+These don't loosen as skills mature up the ladder. They're where this build stops regardless of capability:
+
+- **Finance** (`research-score`, `news-monitor`, `portfolio-track`, `watchlist-scan`, `metrics`): research, scoring, tracking, and alerting only. Nothing ever places or executes a trade.
+- **Messaging** (`draft-outreach`, `client-response`): drafts only. Sending anything on your behalf needs explicit go-ahead for that specific instance, every time.
+- **Concierge** (`book-appointment`, `plan-travel`): researches and drafts. Submitting a booking or payment needs explicit per-instance confirmation; never enters payment or ID details itself.
+- **Legal** (`review-contract`): flags risk in plain language. Explicitly not legal advice — anything material still goes to an actual lawyer.
+- **Home/Environment** (if ever built out beyond a stub): monitoring only. Lock/unlock, arm/disarm stays a manual action regardless of integration.
+- **Engineering** (`dev-digest`): read-only reporting. Never pushes, merges, or comments in a repo. (`document-commit` is the one exception that writes — and it's scoped to `docs/` only, never source.)
+
+---
+
+## Documentation automation
+
+`engineering/docs-init` (one-time full baseline: architecture, SRS, technical docs, code explanations, skill/module architecture, call graph, devlog) plus `engineering/document-commit` (incremental, diff-scoped updates on every commit, so it never re-reads or regenerates the whole doc set). First applied to A.T.H.E.N.A itself — see `docs/` in this repo. Requires a git hook (`.githooks/post-commit`, activated via `git config core.hooksPath .githooks`) and a local `claude` CLI login; runs headless with a scoped `--allowedTools` list rather than `--dangerously-skip-permissions`, since it's unattended.
 
 ---
 
 ## Engine budget — staying inside Claude Pro
 
-Claude Code is included in the Claude Pro subscription ($20/mo) — Claude.ai chat, Claude Code, and Cowork all draw from one shared usage pool (a 5-hour rolling window plus a weekly cap). No separate API bill as long as usage stays inside the plan.
+Claude Code is included in the Claude Pro subscription ($20/mo) — Claude.ai chat, Claude Code, and Cowork share one usage pool (5-hour rolling window plus a weekly cap). No separate API bill as long as usage stays inside the plan.
 
-The risk isn't Claude Code itself, it's *always-on* design. Skills that poll continuously or dashboards that auto-refresh every few seconds will burn the shared pool fast — that's the AI HQ video's model (eight standing agents), and it doesn't fit a Pro-plan personal build.
+The risk isn't Claude Code itself, it's *always-on* design — skills that poll continuously or dashboards that auto-refresh every few seconds burn the shared pool fast. The standing rule: **Claude only gets called for the reasoning/synthesis step.** Anything mechanical — pulling numbers, scanning a market, checking a feed, polling for changes — is a plain script, not a skill invocation. This is what let the skill count grow to 31 without changing the cost picture: every one of them is trigger-based, not a standing agent.
 
-The rule going forward: **Claude only gets called for the reasoning/synthesis step.** Anything mechanical — pulling numbers, scanning a market, checking a feed, polling for changes — is a plain script or scheduled task, not a skill invocation. A skill calls Claude to interpret, summarize, or decide; it doesn't call Claude to fetch or loop. This keeps every department's skills trigger-based, matching the design already in place (skills run on request, not as standing agents), and keeps the whole build free beyond the subscription you're already paying for.
-
-If a specific workflow later needs true always-on monitoring, that's a candidate for a local model (the original JARVIS OS plan's "runs on any local model" swap-out) rather than spending shared Claude Pro capacity on it — a bridge to cross only if it comes up.
+If a workflow later needs true always-on monitoring, that's a candidate for a local model (the original plan's "runs on any local model" swap-out), not spending shared Claude Pro capacity — cross that bridge only if it comes up.
 
 ---
 
-## Build order (updated)
+## Repo status
 
-1. Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora. *(unchanged from the original guide)*
-2. Write the `vault-write` and `vault-health` skills first — every department skill depends on them.
-3. Pick 1–2 departments you'd actually use tomorrow (Operations/`inbox` and Finance/`metrics` are good first picks) and build those skills end to end.
-4. Wire voice: local faster-whisper + Piper push-to-talk, or native Claude Code `/voice` if you have it.
-5. Prompt Claude Code to build the HUD: overview panel + drill-into-department views, reading live from the vault.
-6. Only after the loop works: consider the Ultron-style v2 (edge box, gesture, call UI).
+Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Two commits in: initial scaffold, then the Engineering docs skills. The documentation baseline (`docs/`, `.githooks/`) is written and staged, pending a commit from a real machine — a sandbox mount-bridge quirk left stale lock files that only exist in this session's cached view of the drive, not on disk; committing directly from Windows/Fedora sidesteps it.
+
+---
+
+## Build order — current state
+
+1. ~~Define skills and departments~~ — done, 31 skills across 14 active departments, all reviewed against hard boundaries.
+2. ~~Set up git~~ — done, remote connected.
+3. ~~Apply documentation automation to this project~~ — content written, commit pending on your end (see Repo status).
+4. **Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora** — not started. This is the actual blocker: no skill can write anywhere real until this exists.
+5. Wire voice: local faster-whisper + Piper push-to-talk, or native Claude Code `/voice` if available.
+6. Prompt Claude Code to build the HUD: overview panel + drill-into-department views, reading live from the vault.
+7. Activate the `document-commit` git hook for ongoing repos (this one, plus any tracked in Engineering).
+8. Only after the loop works end to end: consider the Ultron-style v2 (edge box, gesture, call UI).
+
+Step 4 has been the standing blocker since the first draft of this document — everything since has been design and skill definition, none of it executable yet.
