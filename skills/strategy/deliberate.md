@@ -1,0 +1,1 @@
+This skill moved and generalized: see `skills/council/council.md`. It's no longer Strategy-only — Council is cross-cutting and callable from any department for decisions big enough to earn structured deliberation.
