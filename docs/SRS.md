@@ -56,4 +56,3 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 - HUD design and build (Step 4 of the original build guide, not started).
 - Obsidian + Local REST API/MCP wiring (blocks every skill from actually running).
 - Voice pipeline wiring (native `/voice` availability unconfirmed; DIY fallback not yet installed).
-- Git hook trigger cadence for `document-commit`: post-commit (every commit) vs. pre-push (batched) — currently implemented as post-commit per explicit request, revisit if it proves too chatty/expensive.
