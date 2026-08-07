@@ -10,10 +10,12 @@ vault/
     org-chart.md          live department -> skill -> maturity-stage table (source of truth)
     profile.md            persistent user profile, maintained by skills/vault/remember.md
     departments/*.md       one note per department: config, running knowledge, skill list
-  raw/                    captured dumps (not yet created — populated once skills actually run)
-  outputs/                anything skills produce for the user to read (not yet created)
+  raw/<department>/       captured dumps, scaffolded per department (still empty — populated once skills actually run)
+  outputs/<department>/   anything skills produce for the user to read, scaffolded per department (still empty)
 skills/
   <department>/<skill>.md  one file per skill, frontmatter + numbered steps
+.mcp.json                  Obsidian Local REST API MCP connection (gitignored, contains the API key)
+.mcp.json.example          documents the connection shape for local setup
 ```
 
 ## SKILL.md frontmatter schema
@@ -36,12 +38,12 @@ description: what triggers this skill — this is what Claude Code actually matc
 | Component | Status |
 |---|---|
 | Skill definitions (23+ skills, 13 departments) | Done |
-| Obsidian vault + Local REST API/MCP plugin | Not installed — blocks every skill from writing anywhere real |
+| Obsidian vault + Local REST API/MCP plugin | Done — installed, connected, verified end-to-end (write/read/delete) |
 | Voice (native `/voice` or faster-whisper + Piper) | Not installed |
 | HUD | Not built |
-| Cross-machine sync (Syncthing) | Not set up |
+| Cross-machine sync (Syncthing) | Running on Windows, `athena-vault` folder registered, auto-starts at logon; Fedora device pairing pending |
 | Git repo + remote | Done (`github.com/Lykon130/A.T.H.E.N.A`) |
-| `document-commit` git hook | Scripted (`.githooks/pre-push`), not yet activated (needs `git config core.hooksPath .githooks` locally on each machine) |
+| `document-commit` git hook | Active (`core.hooksPath` set to `.githooks` on this machine) |
 
 ## Free/low-cost data sources in use
 

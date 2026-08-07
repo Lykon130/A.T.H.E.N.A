@@ -41,7 +41,7 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 | NFR-3 | Cross-platform: must work identically on Windows and Fedora | User runs two machines |
 | NFR-4 | Voice audio never leaves the local machine (when using the DIY pipeline) | Privacy — no cloud STT/TTS in that path |
 | NFR-5 | Data sources must be free or free-tier for personal use | GDELT (unlimited, free), Finnhub (free tier, personal use) |
-| NFR-6 | Vault stays in sync across both machines | Syncthing (planned, not yet set up) |
+| NFR-6 | Vault stays in sync across both machines | Syncthing, installed and connected |
 
 ## 5. Hard Constraints (non-negotiable, not configuration options)
 
@@ -54,5 +54,4 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 ## 6. Open Requirements (not yet resolved)
 
 - HUD design and build (Step 4 of the original build guide, not started).
-- Obsidian + Local REST API/MCP wiring (blocks every skill from actually running).
 - Voice pipeline wiring (native `/voice` availability unconfirmed; DIY fallback not yet installed).
