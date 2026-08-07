@@ -17,7 +17,7 @@ The department → skill map, kept live. Mirrors Optimal Engine's org-chart conc
 | Concierge | book-appointment, plan-travel | human-led |
 | Data | report | human-led |
 | Design | ideate | human-led |
-| Engineering | dev-digest | human-led |
+| Engineering | dev-digest, docs-init, document-commit | human-led / human-assisted |
 | Health | log-health | human-led |
 | Home/Environment | — | not built (smart TV only — too thin to justify a department; ask if TV on/off control specifically is wanted) |
 | Human Resources | — | not built (no employees = no HR need yet) |
