@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# pre-push hook — runs skills/engineering/document-commit.md for every commit
+# about to be pushed, keeping docs/ incrementally in sync with what changed.
+#
+# Activate with: git config core.hooksPath .githooks
+# Requires: Claude Code CLI installed and authenticated (Pro/Max plan).
+# Fires once per push, covering the whole batch of commits being pushed —
+# see docs/TECHNICAL.md "Git hooks" for the tradeoff vs. post-commit.
+
+set -uo pipefail
+
+ZERO_SHA="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO_SHA" ] && continue   # deleting a ref — nothing to document
+
+  if [ "$remote_sha" = "$ZERO_SHA" ]; then
+    RANGE="$local_sha"                          # new branch on the remote
+  else
+    RANGE="$remote_sha..$local_sha"
+  fi
+
+  # Only commits that touch something outside docs/ — skips document-commit's
+  # own "docs: update for <hash>" commits so it never re-documents itself.
+  COMMITS=$(git rev-list --reverse "$RANGE" -- . ':!docs')
+  [ -z "$COMMITS" ] && continue
+
+  for COMMIT_HASH in $COMMITS; do
+    SHORT_HASH=$(git rev-parse --short "$COMMIT_HASH")
+    echo "[document-commit] Updating docs for $SHORT_HASH..."
+
+    claude -p "Run the document-commit skill (skills/engineering/document-commit.md) for commit $SHORT_HASH. Read the diff via 'git show $SHORT_HASH' and the message via 'git log -1 --pretty=%B $SHORT_HASH'. Patch only the docs/ sections that commit actually touches, append one DEVLOG.md entry, then stage and commit just the docs/ changes with message 'docs: update for $SHORT_HASH'. Do not modify anything outside docs/." \
+      --allowedTools "Read,Edit,Write,Bash(git diff:*),Bash(git show:*),Bash(git log:*),Bash(git add docs/*),Bash(git commit:*)" \
+      --max-turns 15 \
+      || echo "[document-commit] WARNING: doc update failed for $SHORT_HASH — continuing push, docs may be out of date."
+  done
+done
+
+echo "[document-commit] Done."
+exit 0   # never block the actual push on a docs-agent failure
