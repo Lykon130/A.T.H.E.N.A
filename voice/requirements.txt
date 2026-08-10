@@ -1,0 +1,39 @@
+# cffi is pinned to 1.17.1, not latest: on a Windows machine with Smart App
+# Control enabled, the newest cffi wheel's compiled _cffi_backend*.pyd can get
+# blocked (file too new to have Microsoft cloud-reputation yet — see
+# CodeIntegrity event log, "did not meet Enterprise signing level
+# requirements"). 1.17.1 has been out long enough to be broadly recognized.
+# sounddevice and soundfile both need cffi; if a future pin still gets
+# blocked, dropping to an older cffi release is the fix, not disabling Smart
+# App Control.
+cffi==1.17.1
+
+# webrtcvad (the real PyPI package) has no prebuilt Windows wheel and needs
+# MSVC build tools to compile from source. webrtcvad-wheels is a prebuilt
+# drop-in: it installs the same importable `webrtcvad` module without
+# compiling anything, on Windows, Linux (Fedora), and Mac. capture.py uses it
+# directly for utterance silence-detection.
+webrtcvad-wheels
+
+faster-whisper
+sounddevice
+numpy
+openwakeword
+piper-tts
+PyYAML
+onnxruntime
+tqdm
+requests
+scipy
+soundfile
+librosa
+torch
+
+# Speaker verification: SpeechBrain's ECAPA-TDNN (spkrec-ecapa-voxceleb), a
+# model purpose-built for telling speakers apart (unlike resemblyzer's GE2E
+# encoder, which is designed for voice-cloning conditioning and proved too
+# weak in testing — see the comment at the top of verify.py). On Windows,
+# EncoderClassifier.from_hparams needs local_strategy=LocalStrategy.COPY
+# (verify.py sets this) since the default symlink strategy needs elevated
+# privileges.
+speechbrain

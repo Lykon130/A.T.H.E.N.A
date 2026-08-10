@@ -1,3 +1,9 @@
 .mcp.json
 vault/.obsidian/
 vault/.stfolder/
+voice/models/
+voice/voiceprint.npy
+voice/config.yaml
+voice/.session_id
+voice/.venv/
+voice/__pycache__/

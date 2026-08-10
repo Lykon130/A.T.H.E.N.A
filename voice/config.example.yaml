@@ -1,0 +1,35 @@
+# Copy to config.yaml (gitignored) and fill in local values.
+# voice-setup skill creates this for you — hand-editing is only needed to retune.
+
+audio:
+  input_device: null        # null = system default; run `python -m sounddevice` to list indices
+  output_device: null       # null = system default
+  sample_rate: 16000
+
+wake_word:
+  model_path: models/hey_athena.onnx   # falls back to a bundled pre-trained model if custom training didn't land
+  threshold: 0.5
+
+speaker_verification:
+  voiceprint_path: voiceprint.npy
+  # cosine similarity threshold, 0-1, against SpeechBrain ECAPA-TDNN embeddings.
+  # enroll.py's self-check prints your sample-to-voiceprint match avg/min after
+  # enrollment — set this comfortably below that min so you don't get false-rejected
+  # on an off day, but always confirm someone else's voice actually gets rejected
+  # before trusting it (a false accept here reaches Claude with no gate at all).
+  accept_threshold: 0.68
+
+stt:
+  model_size: small.en       # faster-whisper model name; small.en balances speed/accuracy on CPU
+  device: cpu
+  compute_type: int8
+
+tts:
+  voice_model_path: models/en_US-hfc_female-medium.onnx   # a clear US-English female voice; try amy-medium or others from rhasspy/piper-voices if you want a different one
+
+claude:
+  session_id_path: .session_id   # gitignored; created on first run, reused across turns
+  print_flags: ["-p", "--output-format", "text"]
+
+logging:
+  vault_session_dir: ../vault/raw/engineering/voice-sessions

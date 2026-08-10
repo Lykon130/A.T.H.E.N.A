@@ -56,7 +56,7 @@
 
 **HUD layout.** Overview panel + drill-into-department views, not one flat dashboard — not yet built.
 
-**Voice — two tracks.** DIY local pipeline (faster-whisper + Piper, push-to-talk) as the default, works identically on Windows and Fedora — not yet installed. Ultron's edge/gesture/call-UI approach stays a v2 experiment, only worth revisiting once the core loop works end to end.
+**Voice — built and live-tested.** Local pipeline in `voice/`: openWakeWord (currently "Hey Jarvis" as an interim wake word — custom "Hey Athena" training needs a longer GPU-oriented session, deferred) for activation, a local SpeechBrain ECAPA-TDNN voiceprint for speaker verification (only the enrolled voice triggers a response, everything else is silently dropped), faster-whisper for STT, Piper for TTS (`en_US-hfc_female-medium` voice), headless `claude -p` (dedicated resumed session) as the bridge into Claude Code. No keypress anywhere in the runtime loop — activation is wake-word + voiceprint only. An earlier build used resemblyzer's GE2E encoder for verification; live testing caught it producing a real false accept (impostor scored *higher* than the genuine owner), so it was replaced with ECAPA-TDNN, a model purpose-built for speaker verification — confirmed via live test to correctly accept the owner's voice (0.73 similarity) and reject another person's (0.26). Works identically on Windows and Fedora (`skills/engineering/voice-setup.md` drives setup on either; Fedora not yet tested live). Ultron's edge/gesture/call-UI approach stays a v2 experiment, only worth revisiting once the core loop has run for a while in daily use.
 
 ---
 
@@ -109,7 +109,7 @@ Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Two commits in
 2. ~~Set up git~~ — done, remote connected.
 3. ~~Apply documentation automation to this project~~ — content written, commit pending on your end (see Repo status).
 4. **Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora** — not started. This is the actual blocker: no skill can write anywhere real until this exists.
-5. Wire voice: local faster-whisper + Piper push-to-talk, or native Claude Code `/voice` if available.
+5. ~~Wire voice~~ — done: `voice/` module (wake word + speaker verification + faster-whisper + Piper + headless Claude Code bridge), plus `skills/engineering/voice-setup.md`. Built and tested end-to-end on Windows; Fedora documented in `voice/README.md`, not yet tested live there.
 6. Prompt Claude Code to build the HUD: overview panel + drill-into-department views, reading live from the vault.
 7. Activate the `document-commit` git hook for ongoing repos (this one, plus any tracked in Engineering).
 8. Only after the loop works end to end: consider the Ultron-style v2 (edge box, gesture, call UI).
