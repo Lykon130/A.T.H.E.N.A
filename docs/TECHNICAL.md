@@ -6,6 +6,7 @@
 ARCHITECTURE.md          system design + rationale (canonical, predates docs/)
 docs/                     this folder — SRS, technical docs, skills architecture, devlog
 voice/                    local voice module: wake word, speaker verification, STT/TTS, headless Claude bridge (see CODE_EXPLANATIONS.md)
+hud/                      Electron + React + TypeScript desktop HUD, polls the vault via the Obsidian Local REST API (see CODE_EXPLANATIONS.md)
 vault/
   wiki/
     org-chart.md          live department -> skill -> maturity-stage table (source of truth)
@@ -41,7 +42,7 @@ description: what triggers this skill — this is what Claude Code actually matc
 | Skill definitions (23+ skills, 13 departments) | Done |
 | Obsidian vault + Local REST API/MCP plugin | Done — installed, connected, verified end-to-end (write/read/delete) |
 | Voice (`voice/` module: wake word + speaker verification + faster-whisper + Piper) | Done — built and live-tested end-to-end on Windows; Fedora untested |
-| HUD | Not built |
+| HUD (`hud/`: Electron + React, neural-mesh idle view, command bar, department drill-ins) | Built — polls the vault every 30s; real voice wiring into the HUD still deferred (speaking-reactive wave sweep uses a synthetic envelope for now) |
 | Cross-machine sync (Syncthing) | Running on Windows, `athena-vault` folder registered, auto-starts at logon; Fedora device pairing pending |
 | Git repo + remote | Done (`github.com/Lykon130/A.T.H.E.N.A`) |
 | `document-commit` git hook | Active (`core.hooksPath` set to `.githooks` on this machine) |
