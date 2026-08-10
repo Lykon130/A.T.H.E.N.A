@@ -29,7 +29,7 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 | FR-13 | Track health metrics via manual logging | `health/log-health` |
 | FR-14 | Report on tracked repos (commits, PRs, CI status), read-only | `engineering/dev-digest` |
 | FR-15 | Generate and incrementally maintain project documentation on every commit | `engineering/docs-init`, `engineering/document-commit` |
-| FR-16 | Voice interface, local-first | Claude Code native `/voice` if available, else faster-whisper + Piper push-to-talk |
+| FR-16 | Voice interface, local-first | `voice/` module: openWakeWord wake word + SpeechBrain ECAPA-TDNN speaker verification + faster-whisper STT + Piper TTS, bridged to headless `claude -p` |
 | FR-17 | Single-screen HUD showing vitals, schedule, and department drill-ins | Not yet built — planned, pulls from vault via MCP |
 
 ## 4. Non-Functional Requirements
@@ -39,7 +39,7 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 | NFR-1 | Must run inside the Claude Pro subscription's shared usage pool — no required additional API spend | User constraint: "I want to be able to use it for free" |
 | NFR-2 | Claude is only invoked for reasoning/synthesis; mechanical work (data pulls, polling, scanning) is a plain script | Keeps NFR-1 true even as skill count grows |
 | NFR-3 | Cross-platform: must work identically on Windows and Fedora | User runs two machines |
-| NFR-4 | Voice audio never leaves the local machine (when using the DIY pipeline) | Privacy — no cloud STT/TTS in that path |
+| NFR-4 | Voice audio never leaves the local machine (when using the DIY pipeline) | Privacy — no cloud STT/TTS in that path; confirmed by build (`voice/` module is fully local end to end) |
 | NFR-5 | Data sources must be free or free-tier for personal use | GDELT (unlimited, free), Finnhub (free tier, personal use) |
 | NFR-6 | Vault stays in sync across both machines | Syncthing, installed and connected |
 
@@ -54,4 +54,5 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 ## 6. Open Requirements (not yet resolved)
 
 - HUD design and build (Step 4 of the original build guide, not started).
-- Voice pipeline wiring (native `/voice` availability unconfirmed; DIY fallback not yet installed).
+- Custom "Hey Athena" wake-word training (GPU-oriented, deferred; `hey_jarvis` used as an interim wake word — see FR-16).
+- Fedora-side live testing of the voice module (built and tested end-to-end on Windows only so far).

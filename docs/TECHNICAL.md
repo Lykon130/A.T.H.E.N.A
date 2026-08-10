@@ -5,6 +5,7 @@
 ```
 ARCHITECTURE.md          system design + rationale (canonical, predates docs/)
 docs/                     this folder — SRS, technical docs, skills architecture, devlog
+voice/                    local voice module: wake word, speaker verification, STT/TTS, headless Claude bridge (see CODE_EXPLANATIONS.md)
 vault/
   wiki/
     org-chart.md          live department -> skill -> maturity-stage table (source of truth)
@@ -39,7 +40,7 @@ description: what triggers this skill — this is what Claude Code actually matc
 |---|---|
 | Skill definitions (23+ skills, 13 departments) | Done |
 | Obsidian vault + Local REST API/MCP plugin | Done — installed, connected, verified end-to-end (write/read/delete) |
-| Voice (native `/voice` or faster-whisper + Piper) | Not installed |
+| Voice (`voice/` module: wake word + speaker verification + faster-whisper + Piper) | Done — built and live-tested end-to-end on Windows; Fedora untested |
 | HUD | Not built |
 | Cross-machine sync (Syncthing) | Running on Windows, `athena-vault` folder registered, auto-starts at logon; Fedora device pairing pending |
 | Git repo + remote | Done (`github.com/Lykon130/A.T.H.E.N.A`) |
@@ -50,7 +51,8 @@ description: what triggers this skill — this is what Claude Code actually matc
 - **GDELT** — global news/events, completely free, unlimited, no API key. Used by `news/global-scan`.
 - **Finnhub** — free tier, 60 calls/min, real-time quotes + company news, free for personal/non-commercial use. Used by `finance/news-monitor`.
 - **GitHub/GitLab API** — free for personal repos. Used by `engineering/dev-digest`.
-- **faster-whisper** + **Piper** — fully local, free, no API cost. Planned for voice if native Claude Code `/voice` isn't available.
+- **faster-whisper** + **Piper** — fully local, free, no API cost. Used by `voice/stt.py` and `voice/tts.py`.
+- **openWakeWord** + **SpeechBrain (ECAPA-TDNN)** — fully local, free. Used by `voice/wake.py` (wake-word detection) and `voice/verify.py` (speaker verification gate).
 
 ## Cost model
 
