@@ -7,3 +7,7 @@ voice/config.yaml
 voice/.session_id
 voice/.venv/
 voice/__pycache__/
+hud/node_modules/
+hud/dist/
+hud/out/
+hud/*.tsbuildinfo

@@ -99,7 +99,7 @@ If a workflow later needs true always-on monitoring, that's a candidate for a lo
 
 ## Repo status
 
-Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Two commits in: initial scaffold, then the Engineering docs skills. The documentation baseline (`docs/`, `.githooks/`) is written and staged, pending a commit from a real machine — a sandbox mount-bridge quirk left stale lock files that only exist in this session's cached view of the drive, not on disk; committing directly from Windows/Fedora sidesteps it.
+Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Six commits in: initial scaffold, Engineering docs skills, documentation baseline, `document-commit` wired as a pre-push hook, vault folders + Obsidian MCP connection, and the local voice module.
 
 ---
 
@@ -108,10 +108,10 @@ Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Two commits in
 1. ~~Define skills and departments~~ — done, 31 skills across 14 active departments, all reviewed against hard boundaries.
 2. ~~Set up git~~ — done, remote connected.
 3. ~~Apply documentation automation to this project~~ — content written, commit pending on your end (see Repo status).
-4. **Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora** — not started. This is the actual blocker: no skill can write anywhere real until this exists.
+4. ~~Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora~~ — done: `vault/raw/` and `vault/outputs/` scaffolded alongside `wiki/`, Local REST API plugin's built-in Streamable HTTP MCP endpoint wired via `.mcp.json`, Syncthing registered for the vault on Windows (Fedora device pairing still pending).
 5. ~~Wire voice~~ — done: `voice/` module (wake word + speaker verification + faster-whisper + Piper + headless Claude Code bridge), plus `skills/engineering/voice-setup.md`. Built and tested end-to-end on Windows; Fedora documented in `voice/README.md`, not yet tested live there.
-6. Prompt Claude Code to build the HUD: overview panel + drill-into-department views, reading live from the vault.
+6. **Prompt Claude Code to build the HUD** — not started. This is the current blocker: overview panel + drill-into-department views, reading live from the vault.
 7. Activate the `document-commit` git hook for ongoing repos (this one, plus any tracked in Engineering).
 8. Only after the loop works end to end: consider the Ultron-style v2 (edge box, gesture, call UI).
 
-Step 4 has been the standing blocker since the first draft of this document — everything since has been design and skill definition, none of it executable yet.
+Step 6 (the HUD) is now the standing blocker — steps 1-5 are all closed and executable.
