@@ -54,7 +54,7 @@
 
 **Skill maturity ladder.** Every `SKILL.md` carries a `stage`: human-led → human-assisted → fully autonomous, tracked live in `org-chart.md`. No skill moves up the ladder by default.
 
-**HUD layout.** Overview panel + drill-into-department views, not one flat dashboard — not yet built.
+**HUD layout — built.** Idle view (rotating neural mesh, department zones) + Ctrl+K command palette into per-department detail views (`MetricsPanel`, `FeedLogPanel`, `PipelinePanel`, `ReferencePanel`), not one flat dashboard. Lives in `hud/` (Electron + React + TypeScript), polls the vault via the Obsidian Local REST API. Real voice-amplitude wiring into the speaking-reactive wave sweep is still deferred (synthetic envelope for now).
 
 **Voice — built and live-tested.** Local pipeline in `voice/`: openWakeWord (currently "Hey Jarvis" as an interim wake word — custom "Hey Athena" training needs a longer GPU-oriented session, deferred) for activation, a local SpeechBrain ECAPA-TDNN voiceprint for speaker verification (only the enrolled voice triggers a response, everything else is silently dropped), faster-whisper for STT, Piper for TTS (`en_US-hfc_female-medium` voice), headless `claude -p` (dedicated resumed session) as the bridge into Claude Code. No keypress anywhere in the runtime loop — activation is wake-word + voiceprint only. An earlier build used resemblyzer's GE2E encoder for verification; live testing caught it producing a real false accept (impostor scored *higher* than the genuine owner), so it was replaced with ECAPA-TDNN, a model purpose-built for speaker verification — confirmed via live test to correctly accept the owner's voice (0.73 similarity) and reject another person's (0.26). Works identically on Windows and Fedora (`skills/engineering/voice-setup.md` drives setup on either; Fedora not yet tested live). Ultron's edge/gesture/call-UI approach stays a v2 experiment, only worth revisiting once the core loop has run for a while in daily use.
 
@@ -77,7 +77,7 @@ These don't loosen as skills mature up the ladder. They're where this build stop
 - **Concierge** (`book-appointment`, `plan-travel`): researches and drafts. Submitting a booking or payment needs explicit per-instance confirmation; never enters payment or ID details itself.
 - **Legal** (`review-contract`): flags risk in plain language. Explicitly not legal advice — anything material still goes to an actual lawyer.
 - **Home/Environment** (if ever built out beyond a stub): monitoring only. Lock/unlock, arm/disarm stays a manual action regardless of integration.
-- **Engineering** (`dev-digest`): read-only reporting. Never pushes, merges, or comments in a repo. (`document-commit` is the one exception that writes — and it's scoped to `docs/` only, never source.)
+- **Engineering** (`dev-digest`): read-only reporting. Never pushes, merges, or comments in a repo. (`document-commit` is the one exception that writes — and it's scoped to `docs/` and `ARCHITECTURE.md` only, never source.)
 
 ---
 
@@ -99,7 +99,7 @@ If a workflow later needs true always-on monitoring, that's a candidate for a lo
 
 ## Repo status
 
-Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Six commits in: initial scaffold, Engineering docs skills, documentation baseline, `document-commit` wired as a pre-push hook, vault folders + Obsidian MCP connection, and the local voice module.
+Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. 14 commits in: initial scaffold, Engineering docs skills, documentation baseline, `document-commit` wired as a pre-push hook, vault folders + Obsidian MCP connection, the local voice module, and the desktop HUD — each followed by its own `docs: update for <hash>` commit from the hook.
 
 ---
 
@@ -107,11 +107,11 @@ Git-initialized with a remote: `github.com/Lykon130/A.T.H.E.N.A`. Six commits in
 
 1. ~~Define skills and departments~~ — done, 31 skills across 14 active departments, all reviewed against hard boundaries.
 2. ~~Set up git~~ — done, remote connected.
-3. ~~Apply documentation automation to this project~~ — content written, commit pending on your end (see Repo status).
+3. ~~Apply documentation automation to this project~~ — done, `docs-init` baseline written and committed.
 4. ~~Obsidian + Local REST API/MCP plugin, vault folders, Syncthing between Windows and Fedora~~ — done: `vault/raw/` and `vault/outputs/` scaffolded alongside `wiki/`, Local REST API plugin's built-in Streamable HTTP MCP endpoint wired via `.mcp.json`, Syncthing registered for the vault on Windows (Fedora device pairing still pending).
 5. ~~Wire voice~~ — done: `voice/` module (wake word + speaker verification + faster-whisper + Piper + headless Claude Code bridge), plus `skills/engineering/voice-setup.md`. Built and tested end-to-end on Windows; Fedora documented in `voice/README.md`, not yet tested live there.
-6. **Prompt Claude Code to build the HUD** — not started. This is the current blocker: overview panel + drill-into-department views, reading live from the vault.
-7. Activate the `document-commit` git hook for ongoing repos (this one, plus any tracked in Engineering).
+6. ~~Prompt Claude Code to build the HUD~~ — done: `hud/` (Electron + React, neural-mesh idle view, command bar, per-department detail views), polling the vault live.
+7. ~~Activate the `document-commit` git hook~~ — done on Windows (`core.hooksPath` = `.githooks`); needs the same one-line `git config core.hooksPath .githooks` run on Fedora, and re-running on any repo Engineering later tracks via `dev-digest`. Fixed a standing bug alongside this: the skill's routing table and the hook's own headless prompt pointed at a nonexistent `docs/ARCHITECTURE.md`, so this file — the canonical, root-level one — had never actually been touched by an automated doc-update commit; hook scope now explicitly includes it.
 8. Only after the loop works end to end: consider the Ultron-style v2 (edge box, gesture, call UI).
 
-Step 6 (the HUD) is now the standing blocker — steps 1-5 are all closed and executable.
+Steps 1-7 are closed. Open threads, tracked in `docs/SRS.md` §6: live voice → HUD wiring, custom "Hey Athena" wake word training, Fedora-side voice/hook/Syncthing activation.

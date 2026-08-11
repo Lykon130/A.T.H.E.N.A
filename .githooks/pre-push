@@ -29,8 +29,8 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     SHORT_HASH=$(git rev-parse --short "$COMMIT_HASH")
     echo "[document-commit] Updating docs for $SHORT_HASH..."
 
-    claude -p "Run the document-commit skill (skills/engineering/document-commit.md) for commit $SHORT_HASH. Read the diff via 'git show $SHORT_HASH' and the message via 'git log -1 --pretty=%B $SHORT_HASH'. Patch only the docs/ sections that commit actually touches, append one DEVLOG.md entry, then stage and commit just the docs/ changes with message 'docs: update for $SHORT_HASH'. Do not modify anything outside docs/." \
-      --allowedTools "Read,Edit,Write,Bash(git diff:*),Bash(git show:*),Bash(git log:*),Bash(git add docs/*),Bash(git commit:*)" \
+    claude -p "Run the document-commit skill (skills/engineering/document-commit.md) for commit $SHORT_HASH. Read the diff via 'git show $SHORT_HASH' and the message via 'git log -1 --pretty=%B $SHORT_HASH'. Patch only the docs/ sections (and ARCHITECTURE.md at repo root, which is documentation but predates docs/) that commit actually touches, append one DEVLOG.md entry, then stage and commit just the docs/ and ARCHITECTURE.md changes with message 'docs: update for $SHORT_HASH'. Do not modify anything outside docs/ and ARCHITECTURE.md." \
+      --allowedTools "Read,Edit,Write,Bash(git diff:*),Bash(git show:*),Bash(git log:*),Bash(git add docs/*),Bash(git add ARCHITECTURE.md),Bash(git commit:*)" \
       --max-turns 15 \
       || echo "[document-commit] WARNING: doc update failed for $SHORT_HASH — continuing push, docs may be out of date."
   done
