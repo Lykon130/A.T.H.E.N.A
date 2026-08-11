@@ -20,9 +20,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     RANGE="$remote_sha..$local_sha"
   fi
 
-  # Only commits that touch something outside docs/ — skips document-commit's
-  # own "docs: update for <hash>" commits so it never re-documents itself.
-  COMMITS=$(git rev-list --reverse "$RANGE" -- . ':!docs')
+  # Only commits that touch something outside docs/ and ARCHITECTURE.md —
+  # skips document-commit's own "docs: update for <hash>" commits (which may
+  # touch ARCHITECTURE.md too, per its widened write scope) so it never
+  # re-documents itself.
+  COMMITS=$(git rev-list --reverse "$RANGE" -- . ':!docs' ':!ARCHITECTURE.md')
   [ -z "$COMMITS" ] && continue
 
   for COMMIT_HASH in $COMMITS; do

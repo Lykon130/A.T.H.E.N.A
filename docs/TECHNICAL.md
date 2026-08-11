@@ -68,7 +68,7 @@ git config core.hooksPath .githooks
 chmod +x .githooks/pre-push   # not needed on Windows
 ```
 
-Trigger is **pre-push** (fires once per push, looping over every commit since the last push that touches something outside `docs/`) — chosen over `post-commit` specifically to avoid burning Claude Pro's shared usage pool on every WIP/fixup commit. The tradeoff is documented in `skills/engineering/document-commit.md`. A failed doc-update run logs a warning but never blocks the push itself.
+Trigger is **pre-push** (fires once per push, looping over every commit since the last push that touches something outside `docs/` and `ARCHITECTURE.md`) — chosen over `post-commit` specifically to avoid burning Claude Pro's shared usage pool on every WIP/fixup commit. The tradeoff is documented in `skills/engineering/document-commit.md`. A failed doc-update run logs a warning but never blocks the push itself.
 
 The headless run's write scope is `docs/` plus root-level `ARCHITECTURE.md` (`--allowedTools` includes `Bash(git add ARCHITECTURE.md)` alongside `Bash(git add docs/*)`). Originally scoped to `docs/` only; the skill's routing table and the hook's own prompt both pointed at a nonexistent `docs/ARCHITECTURE.md`, so the canonical root-level file was never actually reachable by an automated doc-update commit until this was fixed.
 
