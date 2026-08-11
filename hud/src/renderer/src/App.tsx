@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import type { VaultSnapshot } from '../../shared/types'
+import type { VaultSnapshot, VoiceActivity } from '../../shared/types'
 import OverviewOrbit from './components/OverviewOrbit'
 import DepartmentDetail from './components/DepartmentDetail'
 import NeuralIdle from './components/NeuralIdle'
 import CommandBar from './components/CommandBar'
 import type { Action } from './lib/commands'
+import { syntheticAmplitude } from './lib/syntheticVoice'
 
 const FLASH_TO_NAV_DELAY_MS = 550
 const SPEAK_TEST_DURATION_MS = 5000
 
 type Flash = { departmentId: string; start: number } | null
+
+const IDLE_VOICE: VoiceActivity = { speaking: false, amplitude: 0 }
 
 export default function App(): JSX.Element {
   const [snapshot, setSnapshot] = useState<VaultSnapshot | null>(null)
@@ -18,10 +21,11 @@ export default function App(): JSX.Element {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [commandBarOpen, setCommandBarOpen] = useState(false)
   const [flash, setFlash] = useState<Flash>(null)
-  const [speaking, setSpeaking] = useState(false)
+  const [voice, setVoice] = useState<VoiceActivity>(IDLE_VOICE)
 
   const navTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
-  const speakTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const speakTestRafRef = useRef<number>()
+  const speakTestStartRef = useRef(0)
 
   useEffect(() => {
     const unsubscribe = window.athena.onVaultUpdate(setSnapshot)
@@ -29,9 +33,16 @@ export default function App(): JSX.Element {
   }, [])
 
   useEffect(() => {
+    // Live voice activity from voice/ (real TTS playback amplitude), relayed
+    // through the main process's WebSocket bridge. Overrides speak-test.
+    const unsubscribe = window.athena.onVoiceActivity(setVoice)
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
     return () => {
       clearTimeout(navTimeoutRef.current)
-      clearTimeout(speakTimeoutRef.current)
+      cancelAnimationFrame(speakTestRafRef.current ?? 0)
     }
   }, [])
 
@@ -59,9 +70,18 @@ export default function App(): JSX.Element {
         setShowOrbit(false)
         setSelectedId(null)
       } else if (action.type === 'speak-test') {
-        setSpeaking(true)
-        clearTimeout(speakTimeoutRef.current)
-        speakTimeoutRef.current = setTimeout(() => setSpeaking(false), SPEAK_TEST_DURATION_MS)
+        cancelAnimationFrame(speakTestRafRef.current ?? 0)
+        speakTestStartRef.current = performance.now()
+        const tick = (): void => {
+          const elapsedMs = performance.now() - speakTestStartRef.current
+          if (elapsedMs >= SPEAK_TEST_DURATION_MS) {
+            setVoice(IDLE_VOICE)
+            return
+          }
+          setVoice({ speaking: true, amplitude: syntheticAmplitude(elapsedMs / 1000) })
+          speakTestRafRef.current = requestAnimationFrame(tick)
+        }
+        speakTestRafRef.current = requestAnimationFrame(tick)
       }
       setCommandBarOpen(false)
     },
@@ -146,7 +166,12 @@ export default function App(): JSX.Element {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <NeuralIdle departments={departments} flash={flash} speaking={speaking} />
+              <NeuralIdle
+                departments={departments}
+                flash={flash}
+                speaking={voice.speaking}
+                amplitude={voice.amplitude}
+              />
               <div className="idle-hint">ctrl+k to command</div>
             </motion.div>
           )}

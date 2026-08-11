@@ -2,6 +2,7 @@
 sounddevice rather than round-tripping through a temp file."""
 
 import re
+import time
 
 import numpy as np
 import sounddevice as sd
@@ -9,6 +10,35 @@ from piper.voice import PiperVoice
 
 _voice = None
 _voice_path = None
+
+# How often to sample playback amplitude for the HUD, and over how wide a
+# window. 30/s matches typical UI frame budgets without flooding the bridge;
+# int16 peak is the normalizer since Piper outputs int16 PCM, and the gain
+# compensates for speech RMS normally sitting well below full scale.
+AMPLITUDE_REPORT_INTERVAL_S = 1 / 30
+AMPLITUDE_WINDOW_S = 0.05
+AMPLITUDE_GAIN = 4.0
+_INT16_PEAK = float(np.iinfo(np.int16).max)
+
+
+def _report_amplitude_while_playing(audio: np.ndarray, sample_rate: int, hud) -> None:
+    """Streams real playback amplitude to the HUD in step with audio that's
+    already been handed to sd.play(). Timed off the wall clock rather than an
+    audio callback, since we already know the exact buffer being played."""
+    window_samples = max(1, int(AMPLITUDE_WINDOW_S * sample_rate))
+    total_samples = len(audio)
+    start = time.monotonic()
+
+    while True:
+        idx = int((time.monotonic() - start) * sample_rate)
+        if idx >= total_samples:
+            break
+        window = audio[idx : idx + window_samples]
+        if window.size == 0:
+            break
+        rms = float(np.sqrt(np.mean(window.astype(np.float64) ** 2))) / _INT16_PEAK
+        hud.notify_speaking(min(1.0, rms * AMPLITUDE_GAIN))
+        time.sleep(AMPLITUDE_REPORT_INTERVAL_S)
 
 
 def _get_voice(model_path: str) -> PiperVoice:
@@ -52,7 +82,7 @@ def strip_markdown(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def speak(text: str, voice_model_path: str, output_device=None) -> None:
+def speak(text: str, voice_model_path: str, output_device=None, hud=None) -> None:
     text = strip_markdown(text)
     if not text.strip():
         return
@@ -61,5 +91,10 @@ def speak(text: str, voice_model_path: str, output_device=None) -> None:
     if not chunks:
         return
     audio = np.concatenate(chunks)
-    sd.play(audio, samplerate=voice.config.sample_rate, device=output_device)
+    sample_rate = voice.config.sample_rate
+
+    sd.play(audio, samplerate=sample_rate, device=output_device)
+    if hud is not None:
+        _report_amplitude_while_playing(audio, sample_rate, hud)
+        hud.notify_idle()
     sd.wait()

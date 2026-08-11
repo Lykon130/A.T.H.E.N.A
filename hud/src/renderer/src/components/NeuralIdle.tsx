@@ -41,6 +41,10 @@ const FLASH_BOOST = 0.85
 const WAVE_SWEEP_PERIOD_S = 1.1
 const WAVE_SIGMA = 0.1
 const WAVE_BOOST = 0.85
+// Amplitude arrives as discrete samples (~30/s from real voice/ playback, or
+// once per React re-render for speak-test) — smooth it frame-to-frame so the
+// wave doesn't visibly step between updates.
+const AMPLITUDE_SMOOTHING = 0.3
 
 interface Vec3 {
   x: number
@@ -64,6 +68,7 @@ interface NeuralIdleProps {
   departments: DepartmentSnapshot[]
   flash: { departmentId: string; start: number } | null
   speaking: boolean
+  amplitude: number
 }
 
 function rotateX(v: Vec3, a: number): Vec3 {
@@ -205,12 +210,18 @@ function buildMesh(): {
   return { nodes, edges, intensity, radialDist }
 }
 
-export default function NeuralIdle({ departments, flash, speaking }: NeuralIdleProps): JSX.Element {
+export default function NeuralIdle({
+  departments,
+  flash,
+  speaking,
+  amplitude
+}: NeuralIdleProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const departmentsRef = useRef(departments)
   const flashRef = useRef(flash)
   const speakingRef = useRef(speaking)
   const speakingStartRef = useRef<number | null>(null)
+  const amplitudeRef = useRef(amplitude)
 
   useEffect(() => {
     departmentsRef.current = departments
@@ -224,6 +235,10 @@ export default function NeuralIdle({ departments, flash, speaking }: NeuralIdleP
     speakingRef.current = speaking
     if (speaking) speakingStartRef.current = performance.now()
   }, [speaking])
+
+  useEffect(() => {
+    amplitudeRef.current = amplitude
+  }, [amplitude])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -242,6 +257,7 @@ export default function NeuralIdle({ departments, flash, speaking }: NeuralIdleP
     let zoneOfDeptId = new Map<string, number>()
     let activeZones = new Set<number>()
     let lastDeptCount = 0
+    let smoothedAmplitude = 0
     const maxRadius = LAYERS[LAYERS.length - 1].radiusFactor * 1.05
 
     const sparks: Spark[] = Array.from({ length: SPARK_COUNT }, (_, i) => ({
@@ -296,14 +312,6 @@ export default function NeuralIdle({ departments, flash, speaking }: NeuralIdleP
       )
     }
 
-    function speakingEnvelope(elapsedS: number): number {
-      const e1 = Math.sin((elapsedS * 2 * Math.PI) / 0.37)
-      const e2 = Math.sin((elapsedS * 2 * Math.PI) / 0.61 + 1.3)
-      const e3 = Math.sin((elapsedS * 2 * Math.PI) / 1.7 + 0.4)
-      const raw = e1 * 0.4 + e2 * 0.35 + e3 * 0.25
-      return Math.max(0, raw)
-    }
-
     function step(now: number): void {
       const t = now / 1000
       const rotY = (t * 2 * Math.PI) / ROT_Y_PERIOD_S
@@ -323,13 +331,15 @@ export default function NeuralIdle({ departments, flash, speaking }: NeuralIdleP
         }
       }
 
+      smoothedAmplitude += (amplitudeRef.current - smoothedAmplitude) * AMPLITUDE_SMOOTHING
+
       let waveRadius = -1
       let waveEnvelope = 0
       if (speakingRef.current && speakingStartRef.current !== null) {
         const elapsedS = (now - speakingStartRef.current) / 1000
         const sweepT = (elapsedS % WAVE_SWEEP_PERIOD_S) / WAVE_SWEEP_PERIOD_S
         waveRadius = sweepT * maxRadius
-        waveEnvelope = speakingEnvelope(elapsedS)
+        waveEnvelope = smoothedAmplitude
       }
 
       const projected = nodes.map((p) => {

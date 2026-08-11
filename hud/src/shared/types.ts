@@ -35,7 +35,13 @@ export interface VaultSnapshot {
   departments: DepartmentSnapshot[]
 }
 
+export interface VoiceActivity {
+  speaking: boolean
+  amplitude: number
+}
+
 export interface AthenaBridge {
   onVaultUpdate: (callback: (snapshot: VaultSnapshot) => void) => () => void
   refresh: () => void
+  onVoiceActivity: (callback: (activity: VoiceActivity) => void) => () => void
 }

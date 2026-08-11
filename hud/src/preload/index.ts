@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AthenaBridge, VaultSnapshot } from '../shared/types'
+import type { AthenaBridge, VaultSnapshot, VoiceActivity } from '../shared/types'
 
 const bridge: AthenaBridge = {
   onVaultUpdate(callback) {
@@ -10,6 +10,12 @@ const bridge: AthenaBridge = {
   },
   refresh() {
     ipcRenderer.send('vault:refresh')
+  },
+  onVoiceActivity(callback) {
+    const listener = (_event: Electron.IpcRendererEvent, activity: VoiceActivity): void =>
+      callback(activity)
+    ipcRenderer.on('voice:activity', listener)
+    return () => ipcRenderer.removeListener('voice:activity', listener)
   }
 }
 

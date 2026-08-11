@@ -1,6 +1,7 @@
 import { join } from 'path'
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { getVaultSnapshot } from './vaultClient'
+import { startVoiceBridge } from './voiceBridge'
 
 const POLL_INTERVAL_MS = 30_000
 
@@ -45,7 +46,11 @@ app.whenReady().then(() => {
   })
 
   const interval = setInterval(() => void pushSnapshot(window), POLL_INTERVAL_MS)
-  window.on('closed', () => clearInterval(interval))
+  const stopVoiceBridge = startVoiceBridge(window)
+  window.on('closed', () => {
+    clearInterval(interval)
+    stopVoiceBridge()
+  })
 
   ipcMain.on('vault:refresh', () => void pushSnapshot(window))
 

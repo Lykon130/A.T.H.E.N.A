@@ -33,3 +33,9 @@ claude:
 
 logging:
   vault_session_dir: ../vault/raw/engineering/voice-sessions
+
+hud:
+  # Optional: the desktop HUD's local WebSocket bridge (hud/src/main/voiceBridge.ts).
+  # voice/ works fine with this unreachable (HUD closed) — it just means the
+  # idle view's speaking wave has nothing to react to.
+  bridge_url: ws://127.0.0.1:8765

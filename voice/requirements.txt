@@ -37,3 +37,8 @@ torch
 # (verify.py sets this) since the default symlink strategy needs elevated
 # privileges.
 speechbrain
+
+# Local link from the voice loop to the desktop HUD (hud_bridge.py), streaming
+# real TTS playback amplitude to hud/'s WebSocket server. Sync client, matches
+# the rest of this module's synchronous style — no asyncio elsewhere here.
+websocket-client

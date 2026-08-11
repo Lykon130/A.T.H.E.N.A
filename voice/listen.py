@@ -13,6 +13,9 @@ from stt import transcribe
 from tts import speak
 from bridge import ask_claude
 from logger import log_turn, log_rejection
+from hud_bridge import HudBridge
+
+DEFAULT_HUD_BRIDGE_URL = "ws://127.0.0.1:8765"
 
 
 def main() -> None:
@@ -38,6 +41,9 @@ def main() -> None:
     repo_root = VOICE_DIR.parent
 
     session_dir = resolve(config, "logging.vault_session_dir")
+
+    hud_bridge_url = config.get("hud", {}).get("bridge_url", DEFAULT_HUD_BRIDGE_URL)
+    hud = HudBridge(hud_bridge_url)
 
     detector = WakeWordDetector(wake_model_path, wake_threshold, sample_rate, input_device)
 
@@ -70,7 +76,7 @@ def main() -> None:
         print(f"Athena: {response}")
 
         log_turn(session_dir, text, response)
-        speak(response, tts_voice_path, output_device)
+        speak(response, tts_voice_path, output_device, hud=hud)
 
 
 if __name__ == "__main__":
