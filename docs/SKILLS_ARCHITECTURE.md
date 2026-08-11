@@ -40,6 +40,7 @@ Borrowed directly from the "Optimal Engine" reference's skill cards. No skill st
 - `data/report` reads every other department's `wiki/departments/*.md` and recent `vault/outputs/` — it generates no raw data of its own.
 - `operations/inbox` and `operations/calendar` combine into one morning brief when run together.
 - `engineering/docs-init` (one-time baseline) precedes `engineering/document-commit` (incremental, diff-scoped updates) — the latter assumes the former has already run.
+- `engineering/document-commit`'s routing table sends component/data-flow changes to root-level `ARCHITECTURE.md`, not `docs/ARCHITECTURE.md` — that path never existed. `ARCHITECTURE.md` predates the `docs/` folder and stays canonical at repo root, so it's the one file the hook writes outside `docs/`.
 - Every skill that drafts something user-facing (`sales/draft-outreach`, `support/client-response`, `concierge/book-appointment`, `concierge/plan-travel`) checks `vault/wiki/profile.md` first, maintained by `remember`.
 
 ## Hard boundaries by design (not gaps to close)
