@@ -2,8 +2,8 @@
   --bg: #05070a;
   --bg-panel: #0a0f16;
   --line: #16222c;
-  --accent: #4dff9e;
-  --accent-dim: #1c6640;
+  --accent: #a78bfa;
+  --accent-dim: #3f2d6b;
   --amber: #ffb454;
   --text: #d7e6ee;
   --text-dim: #6f8391;
@@ -40,7 +40,7 @@ body {
   justify-content: space-between;
   padding: 16px 28px;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(77, 255, 158, 0.05), transparent);
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.05), transparent);
 }
 
 .app-bar-title {
@@ -48,7 +48,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.35em;
   color: var(--accent);
-  text-shadow: 0 0 12px rgba(77, 255, 158, 0.5);
+  text-shadow: 0 0 12px rgba(167, 139, 250, 0.5);
 }
 
 .app-bar-status {
@@ -166,8 +166,8 @@ body {
   height: 140px;
   border-radius: 50%;
   border: 1px solid var(--accent-dim);
-  background: radial-gradient(circle, rgba(77, 255, 158, 0.12), transparent 70%);
-  box-shadow: 0 0 40px rgba(77, 255, 158, 0.15);
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.12), transparent 70%);
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.15);
 }
 
 .orbit-hub-label {
@@ -175,7 +175,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.2em;
   color: var(--accent);
-  text-shadow: 0 0 10px rgba(77, 255, 158, 0.6);
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.6);
 }
 
 .orbit-hub-sub {
@@ -206,7 +206,7 @@ body {
 
 .orbit-node-active {
   border: 1px solid var(--accent);
-  box-shadow: 0 0 24px rgba(77, 255, 158, 0.35);
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.35);
 }
 
 .orbit-node-idle {
@@ -268,7 +268,7 @@ body {
   font-size: 26px;
   letter-spacing: 0.05em;
   color: var(--accent);
-  text-shadow: 0 0 12px rgba(77, 255, 158, 0.4);
+  text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
 }
 
 .detail-stage {
@@ -388,13 +388,13 @@ body {
   background: var(--bg-panel);
   border: 1px solid var(--accent-dim);
   border-radius: 10px;
-  box-shadow: 0 0 40px rgba(77, 255, 158, 0.2);
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.2);
 }
 
 .command-bar-caret {
   color: var(--accent);
   font-size: 16px;
-  text-shadow: 0 0 8px rgba(77, 255, 158, 0.6);
+  text-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
 }
 
 .command-bar-input {
@@ -434,7 +434,7 @@ body {
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(77, 255, 158, 0.03);
+  background: rgba(167, 139, 250, 0.03);
 }
 
 .metric-tile-label {
@@ -490,7 +490,7 @@ body {
 }
 
 .metric-chart-area {
-  fill: rgba(77, 255, 158, 0.1);
+  fill: rgba(167, 139, 250, 0.1);
   stroke: none;
 }
 
@@ -618,5 +618,5 @@ body {
   border: 1px solid var(--line);
   border-radius: 8px;
   font-size: 13px;
-  background: rgba(77, 255, 158, 0.03);
+  background: rgba(167, 139, 250, 0.03);
 }

@@ -13,14 +13,18 @@ interface LayerConfig {
   radiusFactor: number
   nodeCount: number
   neighbors: number
-  intensity: number // brightness multiplier — highest at the core, gentle falloff toward the outer shell
+  intensity: number // brightness multiplier — kept high and flat across shells so outer layers stay clearly visible
+  color: string // "r, g, b" — each shell is a distinct cosmic body, not one hue at fading alpha
 }
 
+// Core -> outer reads as a deep-space photo composite: a nebula at the center,
+// then a warm star cluster, a red giant shell, a blue shell, and a green outer shell at the edge.
 const LAYERS: LayerConfig[] = [
-  { radiusFactor: 0.32, nodeCount: 520, neighbors: 4, intensity: 1.0 }, // core — densest
-  { radiusFactor: 0.62, nodeCount: 380, neighbors: 3, intensity: 0.92 },
-  { radiusFactor: 1.0, nodeCount: 450, neighbors: 3, intensity: 0.86 }, // the original shell
-  { radiusFactor: 1.35, nodeCount: 260, neighbors: 2, intensity: 0.78 } // outermost
+  { radiusFactor: 0.32, nodeCount: 520, neighbors: 4, intensity: 1.0, color: '224, 90, 255' }, // nebula core
+  { radiusFactor: 0.62, nodeCount: 380, neighbors: 3, intensity: 1.0, color: '255, 196, 92' }, // star cluster
+  { radiusFactor: 1.0, nodeCount: 450, neighbors: 3, intensity: 1.0, color: '255, 82, 76' }, // red giants — the original shell
+  { radiusFactor: 1.17, nodeCount: 320, neighbors: 3, intensity: 1.0, color: '70, 150, 255' }, // blue shell
+  { radiusFactor: 1.35, nodeCount: 260, neighbors: 2, intensity: 1.0, color: '90, 255, 130' } // outer shell
 ]
 const LONG_RANGE_EDGES = 30
 const RADIUS_JITTER = 0.1 // shell thickness as a fraction of each layer's own radius
@@ -32,8 +36,7 @@ const BREATH_PERIOD_S = 4.4
 const SPARK_COUNT = 16
 const SPARK_TRAIL_STEPS = 5
 const SPARK_DURATION_MS = 700
-const ACCENT = '77, 255, 158' // matches --accent in theme.css
-const CORE_HOT = '196, 255, 224' // near-white-green, the "hot" center of the gradient
+const CORE_HOT = '255, 235, 250' // near-white, the hottest point of the nebula gradient
 
 const ACTIVE_GLOW_BOOST = 0.22
 const FLASH_DURATION_MS = 900
@@ -88,6 +91,23 @@ function dist2(a: Vec3, b: Vec3): number {
   const dy = a.y - b.y
   const dz = a.z - b.z
   return dx * dx + dy * dy + dz * dz
+}
+
+function parseRgb(s: string): [number, number, number] {
+  const parts = s.split(',').map((n) => parseFloat(n))
+  return [parts[0], parts[1], parts[2]]
+}
+
+/** Cross-layer edges blend the two cosmic bodies they connect rather than picking one. */
+function blendRgb(a: string, b: string): string {
+  const [ar, ag, ab] = parseRgb(a)
+  const [br, bg, bb] = parseRgb(b)
+  return `${(ar + br) / 2}, ${(ag + bg) / 2}, ${(ab + bb) / 2}`
+}
+
+function lightenRgb(s: string, amount: number): string {
+  const [r, g, b] = parseRgb(s)
+  return `${r + (255 - r) * amount}, ${g + (255 - g) * amount}, ${b + (255 - b) * amount}`
 }
 
 /** Deterministic near-uniform point on a unit sphere — used both for node distribution and department zone anchors. */
@@ -169,11 +189,14 @@ function bridgeEdges(
 function buildMesh(): {
   nodes: Vec3[]
   edges: Edge[]
+  edgeColors: string[]
   intensity: number[]
+  colors: string[]
   radialDist: number[]
 } {
   const nodes: Vec3[] = []
   const intensity: number[] = []
+  const colors: string[] = []
   const layerNodeSets: Vec3[][] = []
   const layerOffsets: number[] = []
 
@@ -184,6 +207,7 @@ function buildMesh(): {
     for (const n of layerNodes) {
       nodes.push(n)
       intensity.push(layer.intensity)
+      colors.push(layer.color)
     }
   }
 
@@ -205,9 +229,10 @@ function buildMesh(): {
     edges.push({ a, b, kind: 'long-range' })
   }
 
+  const edgeColors = edges.map((e) => blendRgb(colors[e.a], colors[e.b]))
   const radialDist = nodes.map((n) => Math.hypot(n.x, n.y, n.z))
 
-  return { nodes, edges, intensity, radialDist }
+  return { nodes, edges, edgeColors, intensity, colors, radialDist }
 }
 
 export default function NeuralIdle({
@@ -251,7 +276,7 @@ export default function NeuralIdle({
     let width = 0
     let height = 0
     let radius = 0
-    const { nodes, edges, intensity, radialDist } = buildMesh()
+    const { nodes, edges, edgeColors, intensity, colors, radialDist } = buildMesh()
     const nodeExtraAlpha = new Float32Array(nodes.length)
     let nodeZone: number[] = []
     let zoneOfDeptId = new Map<string, number>()
@@ -316,7 +341,7 @@ export default function NeuralIdle({
       const t = now / 1000
       const rotY = (t * 2 * Math.PI) / ROT_Y_PERIOD_S
       const rotX = WOBBLE_X_AMPLITUDE * Math.sin((t * 2 * Math.PI) / WOBBLE_X_PERIOD_S)
-      const breath = 0.72 + 0.28 * Math.sin((t * 2 * Math.PI) / BREATH_PERIOD_S)
+      const breath = 0.78 + 0.22 * Math.sin((t * 2 * Math.PI) / BREATH_PERIOD_S)
 
       maybeRebuildZones()
 
@@ -374,23 +399,25 @@ export default function NeuralIdle({
         height / 2,
         radius * LAYERS[0].radiusFactor * 1.4
       )
-      coreGrad.addColorStop(0, `rgba(${CORE_HOT}, ${0.75 * breath})`)
-      coreGrad.addColorStop(0.4, `rgba(${ACCENT}, ${0.35 * breath})`)
-      coreGrad.addColorStop(1, `rgba(${ACCENT}, 0)`)
+      coreGrad.addColorStop(0, `rgba(${CORE_HOT}, ${0.8 * breath})`)
+      coreGrad.addColorStop(0.3, `rgba(${LAYERS[0].color}, ${0.5 * breath})`)
+      coreGrad.addColorStop(0.65, `rgba(190, 90, 255, ${0.28 * breath})`)
+      coreGrad.addColorStop(1, `rgba(190, 90, 255, 0)`)
       ctx!.fillStyle = coreGrad
       ctx!.fillRect(0, 0, width, height)
 
-      for (const edge of edges) {
+      for (let ei = 0; ei < edges.length; ei++) {
+        const edge = edges[ei]
         const a = projected[edge.a]
         const b = projected[edge.b]
         const depth = (a.z + b.z) / 2
         const front = (depth + 1) / 2
         const edgeIntensity = (intensity[edge.a] + intensity[edge.b]) / 2
         const edgeExtra = (nodeExtraAlpha[edge.a] + nodeExtraAlpha[edge.b]) / 2
-        const baseAlpha = edge.kind === 'long-range' ? 0.24 : edge.kind === 'bridge' ? 0.2 : 0.13
-        const alpha = (0.05 + baseAlpha * front) * breath * edgeIntensity + edgeExtra * front
-        ctx!.strokeStyle = `rgba(${ACCENT}, ${Math.min(alpha, 1)})`
-        ctx!.lineWidth = (edge.kind === 'intra' ? 0.55 : 0.85) + front * 0.5
+        const baseAlpha = edge.kind === 'long-range' ? 0.4 : edge.kind === 'bridge' ? 0.36 : 0.28
+        const alpha = (0.16 + baseAlpha * front) * breath * edgeIntensity + edgeExtra * front
+        ctx!.strokeStyle = `rgba(${edgeColors[ei]}, ${Math.min(alpha, 1)})`
+        ctx!.lineWidth = (edge.kind === 'intra' ? 0.75 : 1.05) + front * 0.5
         ctx!.beginPath()
         ctx!.moveTo(a.x, a.y)
         ctx!.lineTo(b.x, b.y)
@@ -400,14 +427,13 @@ export default function NeuralIdle({
       for (let i = 0; i < projected.length; i++) {
         const n = projected[i]
         const front = (n.z + 1) / 2
-        const alpha = (0.2 + 0.5 * front) * breath * intensity[i] + nodeExtraAlpha[i]
+        const alpha = (0.44 + 0.55 * front) * breath * intensity[i] + nodeExtraAlpha[i]
         ctx!.beginPath()
-        ctx!.arc(n.x, n.y, 0.5 + front * 1 + intensity[i] * 0.6 + nodeExtraAlpha[i] * 0.8, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${ACCENT}, ${Math.min(alpha, 1)})`
+        ctx!.arc(n.x, n.y, 0.8 + front * 1 + intensity[i] * 0.6 + nodeExtraAlpha[i] * 0.8, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(${colors[i]}, ${Math.min(alpha, 1)})`
         ctx!.fill()
       }
 
-      ctx!.shadowColor = `rgba(${CORE_HOT}, 0.9)`
       for (const spark of sparks) {
         let progress = (now - spark.start) / spark.duration
         if (progress >= 1) {
@@ -420,6 +446,8 @@ export default function NeuralIdle({
         const a = projected[edge.a]
         const b = projected[edge.b]
         const envelope = Math.sin(progress * Math.PI)
+        const sparkColor = lightenRgb(edgeColors[spark.edgeIndex], 0.6)
+        ctx!.shadowColor = `rgba(${edgeColors[spark.edgeIndex]}, 0.9)`
 
         for (let trail = SPARK_TRAIL_STEPS; trail >= 0; trail--) {
           const trailProgress = progress - trail * 0.03
@@ -433,7 +461,7 @@ export default function NeuralIdle({
 
           ctx!.beginPath()
           ctx!.arc(x, y, size, 0, Math.PI * 2)
-          ctx!.fillStyle = `rgba(${CORE_HOT}, ${Math.min(fade, 1)})`
+          ctx!.fillStyle = `rgba(${sparkColor}, ${Math.min(fade, 1)})`
           ctx!.shadowBlur = 10 * trailFade
           ctx!.fill()
         }
