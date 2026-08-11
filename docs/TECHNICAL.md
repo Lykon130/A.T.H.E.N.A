@@ -42,7 +42,7 @@ description: what triggers this skill — this is what Claude Code actually matc
 | Skill definitions (23+ skills, 13 departments) | Done |
 | Obsidian vault + Local REST API/MCP plugin | Done — installed, connected, verified end-to-end (write/read/delete) |
 | Voice (`voice/` module: wake word + speaker verification + faster-whisper + Piper) | Done — built and live-tested end-to-end on Windows; Fedora untested |
-| HUD (`hud/`: Electron + React, neural-mesh idle view, command bar, department drill-ins) | Built — polls the vault every 30s; real voice wiring into the HUD still deferred (speaking-reactive wave sweep uses a synthetic envelope for now) |
+| HUD (`hud/`: Electron + React, neural-mesh idle view, command bar, department drill-ins) | Built — polls the vault every 30s; speaking-reactive wave sweep is driven by live voice/ amplitude over a local WebSocket bridge (`main/voiceBridge.ts` <-> `voice/hud_bridge.py`), verified live end-to-end |
 | Cross-machine sync (Syncthing) | Running on Windows, `athena-vault` folder registered, auto-starts at logon; Fedora device pairing pending |
 | Git repo + remote | Done (`github.com/Lykon130/A.T.H.E.N.A`) |
 | `document-commit` git hook | Active (`core.hooksPath` set to `.githooks` on this machine) |

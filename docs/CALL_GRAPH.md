@@ -17,7 +17,11 @@ listen.main
   -> bridge.ask_claude                            (headless `claude -p`, resumes .session_id)
   -> logger.log_turn
   -> tts.speak -> tts.strip_markdown              (Piper)
+       -> tts._report_amplitude_while_playing -> hud_bridge.HudBridge.notify_speaking  (while sd.play() runs, ~30Hz)
+       -> hud_bridge.HudBridge.notify_idle                                             (once playback ends)
 ```
+
+`hud_bridge.HudBridge` is a best-effort WebSocket client to `hud/`'s local bridge — every call above no-ops silently if the HUD isn't running.
 
 `enroll.py` (`main`, run standalone/interactively, not part of the `listen.py` loop) calls `verify.embed_audio` directly to build `voiceprint.npy`, which `verify.load_voiceprint` later loads at `listen.py` startup.
 
@@ -42,7 +46,15 @@ main/index.ts (pushSnapshot)
 
 `vault:refresh` (IPC, renderer -> main) triggers an out-of-cycle `pushSnapshot` the same way.
 
-Preload (`preload/index.ts`) bridges main <-> renderer: exposes `window.athena.onVaultUpdate` (wraps the `vault:update` listener) and `window.athena.refresh` (sends `vault:refresh`) via `contextBridge`.
+Live voice activity, independent of the vault-poll loop:
+
+```
+voice/hud_bridge.py (HudBridge)  --WebSocket (ws://127.0.0.1:8765)-->
+  main/voiceBridge.ts (startVoiceBridge)
+    -> BrowserWindow.webContents.send('voice:activity', {speaking, amplitude})
+```
+
+Preload (`preload/index.ts`) bridges main <-> renderer: exposes `window.athena.onVaultUpdate` (wraps the `vault:update` listener), `window.athena.refresh` (sends `vault:refresh`), and `window.athena.onVoiceActivity` (wraps the `voice:activity` listener) via `contextBridge`.
 
 Renderer, on a user action:
 
@@ -56,7 +68,7 @@ CommandBar (Enter)
        -> show-departments -> OverviewOrbit -> (click) -> DepartmentDetail
 ```
 
-`NeuralIdle`'s render loop (`step`, via `requestAnimationFrame`) runs independently of the above, reading `VaultSnapshot` (for zone activity) and `flash`/`speaking` state passed down from `App`.
+`NeuralIdle`'s render loop (`step`, via `requestAnimationFrame`) runs independently of the above, reading `VaultSnapshot` (for zone activity) and `flash`/`speaking`/`amplitude` state passed down from `App` — the latter two fed by either live `voice:activity` or the command bar's `speak-test` (`App.tsx` -> `lib/syntheticVoice.syntheticAmplitude`).
 
 ## Skill-to-skill handoff map
 
