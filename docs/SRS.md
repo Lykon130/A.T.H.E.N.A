@@ -29,7 +29,7 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 | FR-13 | Track health metrics via manual logging | `health/log-health` |
 | FR-14 | Report on tracked repos (commits, PRs, CI status), read-only | `engineering/dev-digest` |
 | FR-15 | Generate and incrementally maintain project documentation on every commit | `engineering/docs-init`, `engineering/document-commit` |
-| FR-16 | Voice interface, local-first | `voice/` module: openWakeWord wake word + SpeechBrain ECAPA-TDNN speaker verification + faster-whisper STT + Piper TTS, bridged to headless `claude -p` |
+| FR-16 | Voice interface, local-first | `voice/` module: openWakeWord wake word (custom-trained "Hey Athena" model, validated live end-to-end) + SpeechBrain ECAPA-TDNN speaker verification + faster-whisper STT + Piper TTS, bridged to headless `claude -p` |
 | FR-17 | Single-screen HUD showing vitals, schedule, and department drill-ins | Built: `hud/` (Electron + React), idle neural-mesh view with a live voice-reactive wave sweep, Ctrl+K command palette, archetype-based department detail views (metrics/feed/pipeline/reference), polling the vault via the Obsidian Local REST API |
 
 ## 4. Non-Functional Requirements
@@ -54,5 +54,4 @@ In scope: personal operations, a solo business/freelance workflow, content creat
 ## 6. Open Requirements (not yet resolved)
 
 - HUD metrics remain honest empty states until a department's skills actually produce time-series data — no fabricated numbers.
-- Custom "Hey Athena" wake-word training (GPU-oriented, deferred; `hey_jarvis` used as an interim wake word — see FR-16).
 - Fedora-side live testing of the voice module (built and tested end-to-end on Windows only so far).
